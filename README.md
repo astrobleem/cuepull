@@ -1,5 +1,8 @@
 # CuePull
 
+[Download the ready source bundle](https://github.com/astrobleem/cuepull/releases/latest)
+· [Platform tests](https://github.com/astrobleem/cuepull/actions/workflows/tests.yml)
+
 Free, open-source CD image extraction. Choose an image, choose a new folder,
 and extract. No drive mounting, accounts, ads, telemetry, or update nags.
 
