@@ -42,6 +42,23 @@ an unknown-publisher or SmartScreen warning. Verify the official release and
 `SHA256SUMS.txt`, and follow your security policy. CuePull does not bypass
 warnings or change Windows security settings.
 
+## CuePull in action
+
+These are actual screenshots of the CI-built Windows app using an original
+synthetic demo disc. No commercial disc content or user paths are shown.
+
+Choose or drop an image in the window, then click Extract:
+
+![CuePull with a synthetic BIN selected and its sibling output folder ready](docs/screenshots/choose-image.png)
+
+Dropping a BIN onto the EXE starts extraction automatically:
+
+![Actual CuePull extraction progress: 8 MiB copied, 25 percent complete](docs/screenshots/extracting.png)
+
+The result stays visible, with an Open folder button:
+
+![CuePull completed extraction of five synthetic files from a BIN without CUE](docs/screenshots/finished.png)
+
 ## Extract BIN without CUE
 
 Drop the BIN onto `CuePull.exe`. No replacement cue sheet is needed for a
