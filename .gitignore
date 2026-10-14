@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+# Generated dependency bundle is reproduced from the pinned lockfile.
+dependencies/
+# Never put disc media or extraction output into this repository.
+*.bin
+*.cue
+*.iso
+*.img
+*.wav
+cuepull-manifest.json

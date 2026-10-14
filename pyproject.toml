@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cuepull"
+version = "0.1.0"
+description = "Stream files directly from BIN/CUE CD images without mounting"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = ["pycdlib==1.14.0"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.scripts]
+cuepull = "cuepull.cli:main"
+
+[tool.setuptools]
+packages = ["cuepull"]
