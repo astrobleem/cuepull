@@ -130,6 +130,9 @@ existing destinations and opens extracted files with exclusive creation.
 It preflights the entire file plan before creating the destination. Traversal,
 absolute/drive paths, alternate data streams, device names, and symlink/reparse
 components are rejected. It never creates disc symlinks.
+Use physical directory paths when a system exposes an alias through a
+symlink (for example macOS `/var` and `/tmp` aliases); `realpath` shows the
+physical path. This keeps the same link checks on every platform.
 
 For portability, invalid Windows filename characters become underscores,
 trailing dots/spaces are removed, long names are shortened with a stable hash,

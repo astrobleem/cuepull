@@ -64,7 +64,10 @@ def wrap(data, mode):
 class Fixture(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name)
+        # macOS exposes its temporary tree through the /var system symlink.
+        # Use the physical fixture path so link-rejection tests exercise only
+        # the links intentionally created by the test.
+        self.root = Path(self.temp.name).resolve()
 
     def tearDown(self):
         self.temp.cleanup()
