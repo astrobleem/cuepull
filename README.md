@@ -1,6 +1,6 @@
 # CuePull - free BIN/CUE extractor for Windows
 
-**[Download CuePull for Windows](https://github.com/astrobleem/cuepull/releases/latest)**
+**[Download CuePull for Windows](https://github.com/astrobleem/cuepull/releases/download/v0.2.0/CuePull-0.2.0-windows-x64.zip)**
 | [Source and other platforms](#source-and-other-platforms)
 | [Tests](https://github.com/astrobleem/cuepull/actions)
 

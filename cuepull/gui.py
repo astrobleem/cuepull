@@ -94,6 +94,10 @@ class App:
                 self.start()
         except Exception as exc:
             self.result_kind = "error"
+            self.image.set("")
+            self.destination.set("")
+            self.progress["value"] = 0
+            self.folder_button.configure(state="disabled")
             self.status.set("Could not select the image")
             self.detail.set(str(exc))
 

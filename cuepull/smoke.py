@@ -52,10 +52,16 @@ def fixture(folder, stem, raw=True, large=False):
 
 def capture_window(root, path):
     """PNG encode pixels returned by PrintWindow for this exact Tk window."""
+    root.update_idletasks()
+    root.update()
+    time.sleep(0.25)
+    root.update()
     from ctypes import wintypes as w
     user, gdi = ctypes.WinDLL("user32", use_last_error=True), ctypes.WinDLL("gdi32", use_last_error=True)
     user.GetAncestor.argtypes = [w.HWND, w.UINT]; user.GetAncestor.restype = w.HWND
     hwnd = user.GetAncestor(root.winfo_id(), 2)
+    user.RedrawWindow.argtypes = [w.HWND, ctypes.c_void_p, ctypes.c_void_p, w.UINT]
+    user.RedrawWindow(hwnd, None, None, 0x581)
     user.GetWindowRect.argtypes = [w.HWND, ctypes.POINTER(w.RECT)]
     rect = w.RECT(); user.GetWindowRect(hwnd, ctypes.byref(rect))
     width, height = rect.right - rect.left, rect.bottom - rect.top
