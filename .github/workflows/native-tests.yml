@@ -1,0 +1,47 @@
+name: Native C candidate tests
+on:
+  push:
+    paths: ['native/**', '.github/workflows/native-tests.yml']
+  pull_request:
+    paths: ['native/**', '.github/workflows/native-tests.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --require-hashes -r requirements.txt
+      - name: Build portable CLI (POSIX)
+        if: runner.os != 'Windows'
+        working-directory: native
+        run: make
+      - name: Sanitized portable tests (Linux)
+        if: runner.os == 'Linux'
+        working-directory: native
+        run: |
+          cc -std=c99 -g -Wall -Wextra -Werror -pedantic -fsanitize=undefined -fno-sanitize-recover=all core.c platform.c cli.c -o cuepull32-ubsan
+          python tests/test_native.py --exe ./cuepull32-ubsan -v
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - name: Build portable CLI (modern MSVC; not legacy qualification)
+        if: runner.os == 'Windows'
+        working-directory: native
+        run: cl /nologo /W4 /WX /O2 /D_CRT_SECURE_NO_WARNINGS core.c platform.c cli.c /Fe:cuepull32-cli.exe user32.lib
+      - name: Test portable CLI (POSIX)
+        if: runner.os != 'Windows'
+        working-directory: native
+        run: python tests/test_native.py --exe ./cuepull32-cli -v
+      - name: Test portable CLI (modern Windows)
+        if: runner.os == 'Windows'
+        working-directory: native
+        run: python tests/test_native.py --exe ./cuepull32-cli.exe -v
+      # No release/upload step: old Windows guests must qualify legacy builds.

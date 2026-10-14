@@ -8,6 +8,10 @@ Free CD image extraction. No mounting, installer, admin access, accounts,
 ads, telemetry, or update nags. Windows builds include Python and need no
 Python installation. Your original image is opened read-only.
 
+For legacy Windows development, see the separate [CuePull32 native C candidate](native/README.md).
+It targets XP/98 but still needs actual guest qualification; v0.2.0 remains the
+modern Windows release.
+
 ## how to extract bin/cue
 
 1. Download **CuePull-0.2.0-windows-x64.zip** from the release page.

@@ -15,3 +15,9 @@ dependencies/
 *.img
 *.wav
 cuepull-manifest.json
+cuepull32-manifest.tsv
+native/cuepull32-cli
+native/cuepull32-ubsan
+*.obj
+*.exe
+*.map

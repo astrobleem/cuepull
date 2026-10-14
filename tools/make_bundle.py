@@ -14,6 +14,11 @@ SOURCE_NAMES = {"LICENSE", ".gitignore", "THIRD_PARTY.md", "README.md",
                 "requirements.txt", "pyproject.toml", "CuePull.cmd", "run.py",
                 "desktop.py", "cli_entry.py", "build-requirements.txt"}
 EXCLUDED_DIRS = {".git", "__pycache__", "dependencies", ".venv", "dist", "build"}
+NATIVE_FILES = {"cuepull.h", "platform.h", "core.c", "platform.c", "cli.c",
+                "win32.c", "README.md", "THIRD_PARTY.md", "Makefile",
+                "build-watcom.cmd", "pe_audit.py", "make_bundle.py",
+                "tests/test_native.py", "tests/test_win32_gui.py",
+                "licenses/OpenWatcom-1.9.txt"}
 
 
 def main():
@@ -41,6 +46,8 @@ def main():
                      or (relative.parts[0] in {"cuepull", "tests", "tools"} and path.suffix == ".py")
                      or (relative.parts[0] == ".github" and path.suffix == ".yml")
                      or (relative.parts[0] == "docs" and path.suffix in {".png", ".md"})
+                     or (relative.parts[0] == "native" and
+                         Path(*relative.parts[1:]).as_posix() in NATIVE_FILES)
                      or (relative.parts[0] == "licenses" and path.name in
                          {"pycdlib-LGPL-2.1.txt", "Tcl-license.terms.txt", "Tk-license.terms.txt"}))
         if path.is_file() and permitted:
