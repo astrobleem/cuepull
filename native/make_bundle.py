@@ -39,7 +39,9 @@ def main():
         p = root / name
         if p.is_symlink() or not p.is_file(): parser.error('Missing/linked source: ' + name)
         source[name] = p.read_bytes()
-    source['LICENSE'] = (root.parent / 'LICENSE').read_bytes()
+    license_path = root / 'LICENSE'
+    if not license_path.is_file(): license_path = root.parent / 'LICENSE'
+    source['LICENSE'] = license_path.read_bytes()
     audit_report = [audit(args.build / name) for name in ('CuePull32.exe', 'cuepull32-cli.exe')]
     assert {r['subsystem'] for r in audit_report} == {2, 3}
     binaries = {name: (args.build / name).read_bytes() for name in ('CuePull32.exe', 'cuepull32-cli.exe')}
