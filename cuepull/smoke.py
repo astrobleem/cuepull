@@ -53,6 +53,8 @@ def fixture(folder, stem, raw=True, large=False):
 def capture_window(root, path):
     """PNG encode pixels returned by PrintWindow for this exact Tk window."""
     root.update_idletasks()
+    root.attributes("-topmost", True)
+    root.lift()
     root.update()
     time.sleep(0.25)
     root.update()
@@ -67,7 +69,8 @@ def capture_window(root, path):
     width, height = rect.right - rect.left, rect.bottom - rect.top
     user.GetWindowDC.argtypes = [w.HWND]; user.GetWindowDC.restype = w.HDC
     user.ReleaseDC.argtypes = [w.HWND, w.HDC]
-    user.PrintWindow.argtypes = [w.HWND, w.HDC, w.UINT]
+    gdi.BitBlt.argtypes = [w.HDC, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                          w.HDC, ctypes.c_int, ctypes.c_int, w.DWORD]
     gdi.CreateCompatibleDC.argtypes = [w.HDC]; gdi.CreateCompatibleDC.restype = w.HDC
     gdi.CreateCompatibleBitmap.argtypes = [w.HDC, ctypes.c_int, ctypes.c_int]; gdi.CreateCompatibleBitmap.restype = w.HBITMAP
     gdi.SelectObject.argtypes = [w.HDC, w.HGDIOBJ]; gdi.SelectObject.restype = w.HGDIOBJ
@@ -83,7 +86,9 @@ def capture_window(root, path):
     bitmap = gdi.CreateCompatibleBitmap(hdc, width, height)
     previous = gdi.SelectObject(memory, bitmap)
     try:
-        if not user.PrintWindow(hwnd, memory, 2):
+        # Capture the pixels actually displayed by our foreground window.
+        # Tk's WM_PRINT implementation clips large themed text on Server.
+        if not gdi.BitBlt(memory, 0, 0, width, height, hdc, 0, 0, 0x00CC0020):
             raise ctypes.WinError(ctypes.get_last_error())
         pixels = ctypes.create_string_buffer(width * height * 4)
         if gdi.GetDIBits(memory, bitmap, 0, height, pixels, ctypes.byref(header), 0) != height:
@@ -203,7 +208,7 @@ def run(report_folder):
         assert app.image.get() == str(raw) and not app.busy
         report["checks"].append("file-picker selection callback")
         report["status"] = "passed"
-        report["screenshot_method"] = "PrintWindow pixels from the actual application HWND; synthetic fixture only"
+        report["screenshot_method"] = "Window-DC pixels from this foreground application HWND; synthetic fixture only"
         report["parser_source"] = str(Path(sys.modules["pycdlib"].__file__).relative_to(Path(sys.executable).parent)) if report["frozen"] else "source environment"
     except Exception:
         report["status"] = "failed"
