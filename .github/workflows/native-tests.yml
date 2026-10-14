@@ -28,7 +28,7 @@ jobs:
         if: runner.os == 'Linux'
         working-directory: native
         run: |
-          cc -std=c99 -g -Wall -Wextra -Werror -pedantic -fsanitize=undefined -fno-sanitize-recover=all core.c platform.c cli.c -o cuepull32-ubsan
+          cc -std=c99 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-sanitize-recover=all core.c platform.c cli.c -o cuepull32-ubsan
           python tests/test_native.py --exe ./cuepull32-ubsan -v
       - uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'

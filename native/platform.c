@@ -38,7 +38,9 @@ static int windows_component(const char *text, size_t length)
         if ((unsigned char)text[i] < 32 || strchr(":<>\"|?*", text[i])) return 0;
     n = 0;
     while (n < length && text[n] != '.' && n < sizeof(base) - 1) {
-        base[n] = (char)toupper((unsigned char)text[n]); ++n;
+        unsigned c;
+        c = (unsigned char)text[n];
+        base[n] = (char)(c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c); ++n;
     }
     base[n] = 0;
     if (!strcmp(base, "CON") || !strcmp(base, "NUL") || !strcmp(base, "PRN") ||

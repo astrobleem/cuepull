@@ -48,7 +48,7 @@ partial output with an incomplete manifest; choose a new folder to retry.
 * MODE1/2048, MODE1/2352, MODE2/2352 Form1, MODE2/2336 Form1. Raw sync/mode and
   duplicate MODE2 subheaders are checked; Form2 is rejected. EDC/ECC and BCD
   sector addresses are not verified.
-* One matching-stem sibling `FILE ... BINARY` in a CUE, up to 99 tracks, INDEX
+* One matching-stem sibling BIN/ISO/IMG `FILE ... BINARY` in a CUE, up to 99 tracks, INDEX
   00/01 and virtual PREGAP. Stored INDEX00 bytes bound the previous track;
   PREGAP adds no bytes. Audio tracks are skipped. The one readable data volume
   must be unambiguous. Case-exact FILE spelling is needed on case-sensitive

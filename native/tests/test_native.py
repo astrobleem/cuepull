@@ -162,7 +162,7 @@ class NativeTests(unittest.TestCase):
     def test_malformed_and_external_cue(self):
         image, cue = self.image()
         for name in ('../disc.bin', '/disc.bin', r'C:\disc.bin', r'\\server\disc.bin',
-                     'NUL.bin', 'disc.bin:stream', 'other.bin'):
+                     'NUL.bin', 'disc.bin:stream', 'other.bin', 'disc.txt'):
             with self.subTest(name=name):
                 cue.write_text(f'FILE "{name}" BINARY\nTRACK 01 MODE1/2352\nINDEX 01 00:00:00')
                 self.run_cli('inspect', cue, success=False)

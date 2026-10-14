@@ -33,8 +33,11 @@ static int fail(cp_disc *disc, const char *message)
 static int same(const char *a, const char *b)
 {
     while (*a && *b) {
-        if (toupper((unsigned char)*a++) != toupper((unsigned char)*b++))
-            return 0;
+        unsigned left, right;
+        left = (unsigned char)*a++; right = (unsigned char)*b++;
+        if (left >= 'a' && left <= 'z') left -= 'a' - 'A';
+        if (right >= 'a' && right <= 'z') right -= 'a' - 'A';
+        if (left != right) return 0;
     }
     return *a == *b;
 }
@@ -97,7 +100,10 @@ static int device_name(const char *text)
     unsigned i;
     i = 0;
     while (*text && *text != '.' && i < sizeof(base) - 1)
-        base[i++] = (char)toupper((unsigned char)*text++);
+        { unsigned c;
+          c = (unsigned char)*text++;
+          base[i++] = (char)(c >= 'a' && c <= 'z' ? c - ('a' - 'A') : c);
+        }
     base[i] = 0;
     if (!strcmp(base, "CON") || !strcmp(base, "PRN") ||
         !strcmp(base, "AUX") || !strcmp(base, "NUL") ||
@@ -180,7 +186,7 @@ static int cue_parse(cp_disc *disc)
     cp_file *cue;
     cp_u64 bytes, value;
     char *text, *line, *next, *args[8];
-    char cue_name[CP_PATH], image_name[CP_PATH];
+    char cue_name[CP_PATH], image_name[CP_PATH], detail[CP_ERROR];
     unsigned n, line_number, i;
     int have_file, mode;
     cp_track *track;
@@ -210,11 +216,15 @@ static int cue_parse(cp_disc *disc)
         if (same(args[0], "REM")) {
             for (i = 1; i < n; ++i) if (same(args[i], "SESSION")) goto unsupported;
         } else if (same(args[0], "FILE")) {
+            char *extension;
             if (have_file || n != 3 || !same(args[2], "BINARY")) goto unsupported;
             if (strlen(args[1]) >= CP_PATH || !component_ok(args[1]) ||
                 !stem_same(args[1], cue_name) ||
                 strchr(args[1], '*') || strchr(args[1], '?') ||
                 args[1][strlen(args[1]) - 1] == '.') goto unsafe;
+            extension = strrchr(args[1], '.');
+            if (!extension || (!same(extension, ".bin") && !same(extension, ".iso") &&
+                               !same(extension, ".img"))) goto unsafe;
             strcpy(image_name, args[1]);
             strcpy(disc->image_path, disc->input);
             i = (unsigned)(base_name(disc->image_path) - disc->image_path);
@@ -272,7 +282,8 @@ static int cue_parse(cp_disc *disc)
     }
     return 1;
 malformed:
-    free(text); return fail(disc, "Malformed CUE (track/index/time/line limit).");
+    sprintf(detail, "Malformed CUE at line %u (track/index/time/line limit).", line_number);
+    free(text); return fail(disc, detail);
 unsupported:
     free(text); return fail(disc, "Unsupported CUE: one BINARY FILE, INDEX 00/01, supported modes only; no sessions/POSTGAP.");
 unsafe:
@@ -540,6 +551,7 @@ static void clear_inventory(cp_disc *disc)
 static int volume(cp_disc *disc)
 {
     clear_inventory(disc);
+    disc->opaque_metadata = 0;
     return descriptors(disc) && inventory(disc);
 }
 
