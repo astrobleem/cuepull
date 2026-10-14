@@ -51,7 +51,7 @@ def fixture(folder, stem, raw=True, large=False):
 
 
 def capture_window(root, path):
-    """PNG encode pixels returned by PrintWindow for this exact Tk window."""
+    """PNG encode displayed pixels within this app's exact DWM frame."""
     root.update_idletasks()
     root.attributes("-topmost", True)
     root.lift()
@@ -66,7 +66,14 @@ def capture_window(root, path):
     user.RedrawWindow(hwnd, None, None, 0x581)
     user.GetWindowRect.argtypes = [w.HWND, ctypes.POINTER(w.RECT)]
     rect = w.RECT(); user.GetWindowRect(hwnd, ctypes.byref(rect))
-    width, height = rect.right - rect.left, rect.bottom - rect.top
+    frame = w.RECT()
+    dwm = ctypes.WinDLL("dwmapi")
+    dwm.DwmGetWindowAttribute.argtypes = [w.HWND, w.DWORD, ctypes.c_void_p, w.DWORD]
+    # Exclude invisible resize borders, which can expose background pixels.
+    if dwm.DwmGetWindowAttribute(hwnd, 9, ctypes.byref(frame), ctypes.sizeof(frame)):
+        frame = rect
+    offset_x, offset_y = frame.left - rect.left, frame.top - rect.top
+    width, height = frame.right - frame.left, frame.bottom - frame.top
     user.GetWindowDC.argtypes = [w.HWND]; user.GetWindowDC.restype = w.HDC
     user.ReleaseDC.argtypes = [w.HWND, w.HDC]
     gdi.BitBlt.argtypes = [w.HDC, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
@@ -88,7 +95,7 @@ def capture_window(root, path):
     try:
         # Capture the pixels actually displayed by our foreground window.
         # Tk's WM_PRINT implementation clips large themed text on Server.
-        if not gdi.BitBlt(memory, 0, 0, width, height, hdc, 0, 0, 0x00CC0020):
+        if not gdi.BitBlt(memory, 0, 0, width, height, hdc, offset_x, offset_y, 0x00CC0020):
             raise ctypes.WinError(ctypes.get_last_error())
         pixels = ctypes.create_string_buffer(width * height * 4)
         if gdi.GetDIBits(memory, bitmap, 0, height, pixels, ctypes.byref(header), 0) != height:

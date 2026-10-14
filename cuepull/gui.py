@@ -36,7 +36,7 @@ class App:
             style.configure(".", font=("Segoe UI", 10))
         panel = ttk.Frame(root, padding=20)
         panel.pack(fill="both", expand=True)
-        ttk.Label(panel, text="Extract files from a CD image", font=("Segoe UI", 16)).pack(anchor="w")
+        ttk.Label(panel, text="Extract files from a CD image").pack(anchor="w")
         subtitle = "Drop a BIN or CUE here, or choose an image." if sys.platform == "win32" else "Choose a BIN or CUE image."
         ttk.Label(panel, text=subtitle).pack(anchor="w", pady=(5, 18))
 
