@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+windows/
 *.spec
 # Generated dependency bundle is reproduced from the pinned lockfile.
 dependencies/
