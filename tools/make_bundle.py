@@ -41,7 +41,8 @@ def main():
                      or (relative.parts[0] in {"cuepull", "tests", "tools"} and path.suffix == ".py")
                      or (relative.parts[0] == ".github" and path.suffix == ".yml")
                      or (relative.parts[0] == "docs" and path.suffix in {".png", ".md"})
-                     or (relative.parts[0] == "licenses" and path.name == "pycdlib-LGPL-2.1.txt"))
+                     or (relative.parts[0] == "licenses" and path.name in
+                         {"pycdlib-LGPL-2.1.txt", "Tcl-license.terms.txt", "Tk-license.terms.txt"}))
         if path.is_file() and permitted:
             selected.append((path, relative))
     destination.mkdir()

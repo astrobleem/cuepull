@@ -31,3 +31,8 @@ in every portable Windows ZIP and can be replaced independently of the EXEs.
 The complete CuePull source and build instructions are included in `source`.
 Windows drag/drop uses the operating system's User32/Shell32 APIs and adds no
 external runtime package. Public screenshots use only generated synthetic data.
+
+The complete Tcl/Tk 8.6 notices also accompany this repository, copied unchanged
+from the official upstream `core-8-6-13` source tags:
+https://github.com/tcltk/tcl/blob/core-8-6-13/license.terms and
+https://github.com/tcltk/tk/blob/core-8-6-13/license.terms.

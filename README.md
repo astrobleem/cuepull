@@ -1,4 +1,4 @@
-# CuePull
+# CuePull - free BIN/CUE extractor for Windows
 
 **[Download CuePull for Windows](https://github.com/astrobleem/cuepull/releases/latest)**
 | [Source and other platforms](#source-and-other-platforms)
@@ -8,7 +8,7 @@ Free CD image extraction. No mounting, installer, admin access, accounts,
 ads, telemetry, or update nags. Windows builds include Python and need no
 Python installation. Your original image is opened read-only.
 
-## Windows: drag, drop, done
+## how to extract bin/cue
 
 1. Download **CuePull-0.2.0-windows-x64.zip** from the release page.
 2. Unzip it and keep the whole **CuePull** folder together.
@@ -41,6 +41,31 @@ This release targets **Windows 10/11 x64**. It is unsigned, so Windows may show
 an unknown-publisher or SmartScreen warning. Verify the official release and
 `SHA256SUMS.txt`, and follow your security policy. CuePull does not bypass
 warnings or change Windows security settings.
+
+## Extract BIN without CUE
+
+Drop the BIN onto `CuePull.exe`. No replacement cue sheet is needed for a
+single confidently identifiable ISO 9660/Joliet volume in a supported sector
+layout. CuePull checks sector headers, descriptors, bounds, and directory
+structure. Unknown/audio-only images fail clearly; several valid volumes
+require an explicit choice through the CLI. Missing CUE recovery cannot
+reconstruct original audio boundaries, pregaps, or session information.
+
+## FAQ
+
+**Why might 7-Zip fail on a BIN file?** The `.bin` extension is used for many
+formats. Raw CD images may contain 2352-byte sectors and audio tracks rather
+than a plain ISO byte stream. Recognition depends on the actual format, not
+the extension; some BIN files can be opened by archivers. CuePull handles the
+supported CD sector layouts before reading their ISO 9660/Joliet files.
+
+**Do I need to mount or burn the image?** No. CuePull reads the image directly.
+
+**Are audio tracks extracted?** Audio is currently skipped. CUE track details
+are recorded in the manifest; without a CUE, audio boundaries are unknown.
+
+**Is it free?** Yes. Original CuePull code is MIT licensed. The bundled parser
+and runtime retain their own open-source licenses. No trial, account, or ads.
 
 ## Source and other platforms
 

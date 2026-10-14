@@ -35,7 +35,8 @@ def main():
                 imports.update(a.name.split(".")[0] for a in node.names)
             elif isinstance(node, ast.ImportFrom) and not node.level and node.module:
                 imports.add(node.module.split(".")[0])
-    imports -= {"pycdlib", "__future__"}
+    imports &= sys.stdlib_module_names
+    imports.discard("__future__")
     options = ["--noconfirm", "--clean", "--onedir", "--noupx", "--exclude-module", "pycdlib"]
     for module in sorted(imports):
         options += ["--hidden-import", module]
@@ -73,6 +74,10 @@ def main():
     tcl = Path(tkinter.Tcl().eval("info library"))
     for name, folder in (("Tcl", tcl), ("Tk", tcl.parent / "tk8.6")):
         license_file = folder / "license.terms"
+        if not license_file.exists():
+            # The python.org installer may omit license.terms. Keep the
+            # complete unmodified Tcl/Tk 8.6 upstream notices in our source.
+            license_file = ROOT / "licenses" / (name + "-license.terms.txt")
         if not license_file.exists():
             raise RuntimeError(f"{name} redistribution license was not found")
         shutil.copyfile(license_file, app / "licenses" / (name + "-license.terms.txt"))
