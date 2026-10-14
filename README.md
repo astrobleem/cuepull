@@ -173,9 +173,10 @@ Joliet, symlink rejection, content verification, and source preservation.
 Optional private integration tests use `CUEPULL_REAL_CUE` and
 `CUEPULL_REAL_OUTPUT`; never upload those images, outputs, or manifests.
 
-The included GitHub Actions workflow is configured for Windows/Linux/macOS
-with Python 3.10/3.12. Local validation currently runs on Windows; the other
-platform jobs must run before claiming those platforms have been tested.
+The GitHub Actions workflow tests Windows, Linux, and macOS with Python
+3.10 and 3.12. See the platform test link above for current results. The GUI
+test runs when Tk and a display are available; headless runners skip it.
+The two private real-image tests are optional and are skipped in public CI.
 No public repository or release is created by running CuePull.
 
 To reproduce the ready bundle, download the pinned wheel and build into new
