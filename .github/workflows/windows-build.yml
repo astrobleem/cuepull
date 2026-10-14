@@ -1,0 +1,31 @@
+name: Windows executable
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Install pinned dependencies from PyPI
+        run: >-
+          python -m pip install --only-binary=:all: --require-hashes -r requirements.txt -r build-requirements.txt
+      - name: Test source
+        run: python -m unittest discover -s tests -v
+      - name: Build portable EXEs and source bundle
+        run: python tools/build_windows.py
+      - name: Test frozen app without external Python and capture actual screenshots
+        env:
+          CUEPULL_DEMO_ROOT: 'D:\CuePull Demo'
+        run: python tools/test_windows_bundle.py dist/CuePull build/frozen-test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+            build/frozen-test/smoke-report.json
+            build/frozen-test/screenshots/*.png

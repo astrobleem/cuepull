@@ -31,6 +31,10 @@ class CuePullError(Exception):
     """An actionable image, format, or destination error."""
 
 
+class ExtractionCancelled(CuePullError):
+    """Cooperative cancellation leaves the manifest incomplete."""
+
+
 def is_link(path: Path) -> bool:
     info = path.lstat()
     return stat.S_ISLNK(info.st_mode) or bool(
@@ -641,8 +645,13 @@ def source_fingerprint(paths: list[Path]) -> list[dict]:
     return result
 
 
-def extract(disc: Disc, destination: Path, progress: Callable | None = None) -> dict:
+def extract(disc: Disc, destination: Path, progress: Callable | None = None,
+            cancelled: Callable | None = None) -> dict:
     destination = Path(destination).absolute()
+    def check_cancelled():
+        if cancelled and cancelled():
+            raise ExtractionCancelled("Extraction cancelled; partial output remains.")
+    check_cancelled()
     reject_links(destination)
     if destination.exists():
         raise CuePullError(f"Destination already exists; choose a new folder: {destination}")
@@ -665,16 +674,19 @@ def extract(disc: Disc, destination: Path, progress: Callable | None = None) -> 
     with manifest_path.open("x", encoding="utf-8") as fp:
         json.dump(manifest, fp, ensure_ascii=False, indent=2)
     for entry in sorted((e for e in disc.entries if e.directory), key=lambda e: len(e.output)):
+        check_cancelled()
         safe_output(destination, entry.output).mkdir()
     completed_bytes = 0
     completed_files = 0
     for entry in (e for e in disc.entries if not e.directory):
+        check_cancelled()
         path = safe_output(destination, entry.output)
         digest = hashlib.sha256()
         written = 0
         with path.open("xb") as output, disc.iso.open_file_from_iso(
                 **disc.path_arg(entry.source)) as source:
             while written < entry.size:
+                check_cancelled()
                 data = source.read(min(CHUNK, entry.size - written))
                 if not data:
                     raise CuePullError(f"Short file read: {entry.source}")
@@ -691,6 +703,7 @@ def extract(disc: Disc, destination: Path, progress: Callable | None = None) -> 
         if progress:
             progress(completed_files, completed_bytes, summary, entry.source)
     after = source_fingerprint(paths)
+    check_cancelled()
     if before != after:
         raise CuePullError("Source size/mtime or targeted fingerprints changed during extraction")
     manifest.update({"status": "complete", "source_after": after,

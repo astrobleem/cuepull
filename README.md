@@ -1,200 +1,104 @@
 # CuePull
 
-[Download the ready source bundle](https://github.com/astrobleem/cuepull/releases/latest)
-· [Platform tests](https://github.com/astrobleem/cuepull/actions/workflows/tests.yml)
+**[Download CuePull for Windows](https://github.com/astrobleem/cuepull/releases/latest)**
+| [Source and other platforms](#source-and-other-platforms)
+| [Tests](https://github.com/astrobleem/cuepull/actions)
 
-Free, open-source CD image extraction. Choose an image, choose a new folder,
-and extract. No drive mounting, accounts, ads, telemetry, or update nags.
+Free CD image extraction. No mounting, installer, admin access, accounts,
+ads, telemetry, or update nags. Windows builds include Python and need no
+Python installation. Your original image is opened read-only.
 
-CuePull reads BIN/CUE images directly and streams files to disk. If the CUE
-sheet is missing, it can recover a confidently identifiable ISO data volume
-from the BIN alone. The original images are opened read-only. Extracted
-programs are never launched.
+## Windows: drag, drop, done
 
-Python 3.10 or newer runs the same CLI on Windows, Linux, and macOS. The
-optional GUI uses Tkinter. Python was chosen for portable deployment and the
-established pure-Python PyCdlib filesystem parser; CuePull implements the CUE
-and sector adapter instead of implementing another filesystem parser.
+1. Download **CuePull-0.2.0-windows-x64.zip** from the release page.
+2. Unzip it and keep the whole **CuePull** folder together.
+3. Drag your **BIN or CUE onto CuePull.exe** in Explorer.
 
-## Quick start
+Extraction starts immediately in a folder named after the image, next to it:
 
-In the ready-to-run source ZIP, an unmodified PyCdlib dependency is bundled.
-Unpack the folder and, on Windows, double-click **CuePull.cmd**. Choose a BIN
-or CUE, accept or edit the suggested new output folder, and click **Extract**.
-When a matching CUE exists beside a chosen BIN, the GUI uses it automatically.
-No CUE is needed for a single confidently detected volume. Python with Tkinter
-is required; the Windows python.org installer includes Tkinter.
+```text
+Downloads/
+  example.bin
+  example.cue          # optional
+  example/            # extracted files go here
+```
 
-From an unpacked ready bundle on any supported system:
+If `example` exists, CuePull creates `example (2)`, then `example (3)`, etc.
+Existing files and originals are preserved. The result window stays open.
+Click **Open folder** to see the files. Click **Cancel** to stop; partial files
+remain in that output folder with an incomplete manifest.
+
+Missing CUE? Drop the BIN anyway. CuePull recovers a confidently identifiable
+ISO data volume automatically. Unknown/audio-only images and ambiguous volumes
+receive a useful error. Dropping a matching BIN+CUE pair makes one extraction.
+Spaces and Unicode in image paths are supported.
+
+You can also double-click **CuePull.exe**, drop an image into its window or
+click **Browse**, adjust the output folder if desired, then click **Extract**.
+In-window drops select the image; they do not start extraction on their own.
+
+This release targets **Windows 10/11 x64**. It is unsigned, so Windows may show
+an unknown-publisher or SmartScreen warning. Verify the official release and
+`SHA256SUMS.txt`, and follow your security policy. CuePull does not bypass
+warnings or change Windows security settings.
+
+## Source and other platforms
+
+The source CLI runs on Windows, Linux, and macOS with Python 3.10+. The optional
+source GUI uses Tkinter; native drag/drop and packaged EXEs are currently
+Windows-only. Native macOS/Linux application bundles are not provided.
+
+Download the source ZIP, then:
 
 ```sh
 python run.py gui
-python run.py inspect /path/to/disc.cue
-python run.py list /path/to/disc.cue
-python run.py extract /path/to/disc.cue /path/to/disc-extracted
-python run.py verify /path/to/disc.cue /path/to/disc-extracted
+python desktop.py /path/to/example.bin     # automatic sibling-folder extraction
+python run.py inspect /path/to/example.cue
+python run.py list /path/to/example.cue
+python run.py extract /path/to/example.cue /path/to/new-folder
+python run.py verify /path/to/example.cue /path/to/extracted-folder
 ```
 
-For a source checkout, install the exact parser version from official PyPI:
+Source checkouts install the pinned parser with
+`python -m pip install --only-binary=:all: --require-hashes -r requirements.txt`.
+The ready source ZIP already includes its unmodified source.
+
+## Formats and safety
+
+CuePull supports ISO 9660/Joliet files in MODE1/2048, MODE1/2352, and MODE2
+Form 1 (2352/2336) sectors. It streams file contents and shows progress.
+Audio tracks are skipped, with their CUE information recorded in the manifest.
+
+Output paths, symlinks/reparse points, unsafe CUE references, and Windows name
+collisions are checked. Source names are preserved in a manifest when output
+names are normalized. Existing destinations are never merged or overwritten.
+Unsupported formats fail clearly. See [formats, recovery, verification and
+source instructions](docs/FORMATS.md) for the full supported/unsupported list.
+
+## Building and testing
+
+GitHub Actions tests the portable source on Windows/Linux/macOS with Python
+3.10/3.12. A separate [Windows build](https://github.com/astrobleem/cuepull/actions/workflows/windows-build.yml)
+uses hash-pinned PyInstaller and dependencies to produce the portable EXEs.
+It tests native file-drop messages, automatic launch arguments, raw BIN/CUE
+extraction, progress, cancellation, errors, safe suffixes, and file content
+with external Python paths removed. Actual window screenshots use generated
+synthetic fixtures, never a user's disc or desktop.
+
+To reproduce on Windows x64 with Python 3.12:
 
 ```sh
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: . .venv/bin/activate
-python -m pip install --only-binary=:all: --require-hashes -r requirements.txt
-python -m cuepull inspect /path/to/disc.cue
-python -m cuepull gui
-```
-
-An optional `python -m pip install .` installs the `cuepull` command. On some
-Linux distributions Tkinter is provided separately as a system Python Tk
-package; the CLI works without it. Images are not mounted and administrator
-access is not needed.
-
-## Lost CUE sheet
-
-```sh
-python run.py inspect /path/to/disc.bin
-python run.py extract /path/to/disc.bin /path/to/disc-extracted
-```
-
-Recovery scans the first **64 MiB** for ISO primary descriptors. It requires
-sector alignment, valid raw headers where applicable, matching descriptor
-endian fields, a descriptor terminator, volume/root bounds, and a filesystem
-tree successfully parsed by PyCdlib. The detected volume is confined to the
-size recorded in its primary descriptor. A signature by itself is insufficient.
-
-The manifest labels recovered metadata as **inferred**. It records bytes
-outside the detected volume as unclassified. Original track numbers, audio
-boundaries, pregaps, and sessions cannot be reconstructed from this process.
-Trailing audio is never treated as filesystem data. Audio-only/unknown images
-receive a clear error. A lost CUE with several valid volumes requires a choice;
-the error lists candidates. Advanced commands let you choose a layout/start or
-increase the bounded scan:
-
-```sh
-python run.py inspect disc.bin --scan-mib 256
-python run.py extract disc.bin recovered --layout MODE1/2352 --start-sector 150
-```
-
-`--start-sector` is a file-relative physical sector index, not a byte offset or
-the BCD address in the raw sector header. `--layout` without a start uses zero.
-Overrides still validate the filesystem. Scans can be 1–4096 MiB; only starts
-aligned to the chosen sector width are supported. The ordinary GUI keeps these
-options out of the way and directs ambiguous cases to the CLI.
-
-## Supported formats
-
-| Layout | Behavior |
-|---|---|
-| MODE1/2048 | Cooked 2048-byte data sectors |
-| MODE1/2352 | Validates sync/mode; reads 2048 bytes at offset 16 |
-| MODE2/2352 Form 1 | Validates sync/mode and duplicate XA subheaders; reads at offset 24 |
-| MODE2/2336 Form 1 | Validates duplicate XA subheaders; reads at offset 8 |
-| AUDIO | Track metadata preserved; audio samples are skipped |
-| ISO 9660 | Regular contiguous files and directory trees |
-| Joliet | Auto-selected when available; `--namespace iso` selects plain names |
-
-CUE FILE BINARY sections, file-relative INDEX 01, stored INDEX 00 pregaps, and
-virtual PREGAP/POSTGAP are distinguished. A following INDEX 00 marks the end of
-the preceding track. A PREGAP adds no bytes to the source and does not change
-INDEX offsets. Multiple same-width tracks can share a file. Separate local
-files with different widths are supported through an explicit image whitelist.
-More than one data track requires `--track NUMBER`.
-
-```sh
-python run.py extract disc.cue output --track 1 --image data.bin --image audio.bin
-python run.py inspect disc.cue --json
-python run.py list disc.cue --json
-```
-
-Implicit CUE references must match the CUE stem and refer to a regular sibling
-BIN/IMG/ISO. Explicit `--image` options whitelist other intended sibling files.
-Absolute paths, parent traversal, network references, symlinks/reparse points,
-and arbitrary unrelated references are rejected. References are matched without
-case sensitivity and ambiguous matches are rejected.
-
-Unsupported: MODE2 Form 2, mixed physical widths inside one FILE, WAVE/MP3/CDG
-tracks, multi-session address rebasing, multi-volume ISO sets, HFS/High Sierra,
-UDF-only filesystems, Rock Ridge alternate names, symlinks, interleaved files,
-extended-attribute data, and multi-extent files. Hybrid UDF/ISO media uses only
-its ISO/Joliet tree. Sector EDC/ECC repair or validation is not implemented.
-The raw header address is not used to invent session offsets. CUE session
-directives are rejected; a CUE does not provide enough information to prove
-that an image has only one session. Unsupported structures fail clearly.
-
-## Output safety and verification
-
-The destination must be a **new folder** whose parent exists. CuePull refuses
-existing destinations and opens extracted files with exclusive creation.
-It preflights the entire file plan before creating the destination. Traversal,
-absolute/drive paths, alternate data streams, device names, and symlink/reparse
-components are rejected. It never creates disc symlinks.
-Use physical directory paths when a system exposes an alias through a
-symlink (for example macOS `/var` and `/tmp` aliases); `realpath` shows the
-physical path. This keeps the same link checks on every platform.
-
-For portability, invalid Windows filename characters become underscores,
-trailing dots/spaces are removed, long names are shortened with a stable hash,
-and case-insensitive collisions receive numeric suffixes. ISO version suffixes
-such as `;1` are removed. `cuepull-manifest.json` maps every original path and raw
-identifier to its output name. It also records track layout, source sizes,
-targeted fingerprints, file lengths, and SHA-256 hashes computed while streaming
-the files. This is private extraction metadata, not part of the reusable source.
-
-Progress reports file counts and bytes, including within large files. Reads
-are bounded: file copying uses 512 KiB chunks and sector reads use batches of
-256 sectors. PyCdlib retains directory metadata; this is not constant-memory
-parsing of arbitrarily huge/malicious trees. Application limits include 8 MiB
-per metadata read, 200,000 entries, and depth 64.
-
-`verify` checks every file length and compares first/midpoint/last bytes directly
-to its source extent. This targeted check is useful on slower hardware and is
-not a complete content hash rescan. Extraction records first/middle/last source
-fingerprints and checks sizes/mtimes before and after; source handles are
-read-only. A full original-image hash scan is deliberately not required.
-
-If interrupted or an error occurs, partial files and an `incomplete` manifest
-remain for diagnosis. Choose a new destination to retry. Verification rejects
-incomplete manifests. Keep the selected source and destination directories free
-of concurrent changes; path checks do not promise protection against a separate
-privileged process racing filesystem changes.
-
-## Tests and contributing
-
-```sh
+python -m pip install --only-binary=:all: --require-hashes -r requirements.txt -r build-requirements.txt
 python -m unittest discover -s tests -v
+python tools/build_windows.py
+python tools/test_windows_bundle.py dist/CuePull build/frozen-test
 ```
 
-Tests synthesize their own media. They cover all supported sector layouts,
-unaligned reads, track/gap offsets, malformed CUE/filesystem structures, recovery
-ambiguity/false positives, traversal/device/case safety, overwrite refusal,
-Joliet, symlink rejection, content verification, and source preservation.
-Optional private integration tests use `CUEPULL_REAL_CUE` and
-`CUEPULL_REAL_OUTPUT`; never upload those images, outputs, or manifests.
+The portable folder keeps the runtime beside the EXEs for predictable startup,
+without extracting it into a temporary folder on each launch. Optional
+**CuePull-cli.exe** provides the same inspect/list/extract/verify commands.
 
-The GitHub Actions workflow tests Windows, Linux, and macOS with Python
-3.10 and 3.12. See the platform test link above for current results. The GUI
-test runs when Tk and a display are available; headless runners skip it.
-The two private real-image tests are optional and are skipped in public CI.
-No public repository or release is created by running CuePull.
-
-To reproduce the ready bundle, download the pinned wheel and build into new
-paths. `make_bundle.py` verifies its official PyPI SHA-256, copies an explicit
-source-file allowlist, and includes unmodified parser source and its license.
-ZIP members use fixed timestamps. Media formats and extraction manifests are
-excluded from this source bundle.
-
-```sh
-python -m pip download --no-deps --only-binary=:all: --require-hashes -r requirements.txt -d /tmp/cuepull-wheels
-python tools/make_bundle.py --wheel /tmp/cuepull-wheels/pycdlib-1.14.0-py2.py3-none-any.whl --destination /tmp/cuepull-ready --zip /tmp/cuepull-source.zip
-```
-
-CuePull builds on existing open-source CD tooling. It does not claim to be the
-first BIN/CUE extractor. This project's focus is convenient, safe, direct file
-extraction with a simple Windows entry point.
-
-## License
-
-CuePull is MIT licensed. PyCdlib is LGPL 2.1 and remains a separate dependency.
-See [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md).
+CuePull's original code is **MIT** licensed. PyCdlib remains **LGPL 2.1** and
+is bundled as replaceable, unmodified source in `dependencies/pycdlib`.
+Project source/build instructions and all runtime notices accompany the EXEs.
+See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY.md).

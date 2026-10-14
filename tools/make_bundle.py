@@ -11,7 +11,8 @@ from pathlib import Path
 
 WHEEL_SHA256 = "a905827335f0066af3fd416c5cf9b1f29dffaf4d0914b714555213d1809f38d4"
 SOURCE_NAMES = {"LICENSE", ".gitignore", "THIRD_PARTY.md", "README.md",
-                "requirements.txt", "pyproject.toml", "CuePull.cmd", "run.py"}
+                "requirements.txt", "pyproject.toml", "CuePull.cmd", "run.py",
+                "desktop.py", "cli_entry.py", "build-requirements.txt"}
 EXCLUDED_DIRS = {".git", "__pycache__", "dependencies", ".venv", "dist", "build"}
 
 
@@ -39,6 +40,7 @@ def main():
         permitted = ((len(relative.parts) == 1 and path.name in SOURCE_NAMES)
                      or (relative.parts[0] in {"cuepull", "tests", "tools"} and path.suffix == ".py")
                      or (relative.parts[0] == ".github" and path.suffix == ".yml")
+                     or (relative.parts[0] == "docs" and path.suffix in {".png", ".md"})
                      or (relative.parts[0] == "licenses" and path.name == "pycdlib-LGPL-2.1.txt"))
         if path.is_file() and permitted:
             selected.append((path, relative))

@@ -386,13 +386,13 @@ class GuiTests(Fixture):
 
         def exercise():
             buttons = [w for w in descendants(window) if w.winfo_class() == "TButton"]
-            browse = [b for b in buttons if b.cget("text") == "Browse…"]
+            browse = [b for b in buttons if b.cget("text").startswith("Browse")]
             action = [b for b in buttons if b.cget("text") == "Extract"][0]
             self.assertEqual(len(browse), 2)
             browse[0].invoke()
             browse[1].invoke()
             action.invoke()
-            dest = self.root / "disc-extracted"
+            dest = self.root / "disc"
             deadline = time.monotonic() + 5
             while time.monotonic() < deadline:
                 window.update()

@@ -17,3 +17,17 @@ PyCdlib remains under its own license; MIT does not relicense it.
 No Windows disc files, images, proprietary software, or disc-derived file
 listings are included in the source/release archive. Synthetic tests generate
 their own tiny ISO files at runtime.
+
+Windows releases bundle the CPython runtime (PSF license), Tcl/Tk (their
+upstream license terms), and the PyInstaller bootloader (GPL with its
+distribution exception). Complete notices are in the portable folder's
+`licenses` directory. PyInstaller and its build dependencies are pinned in
+`build-requirements.txt` and installed only for building. See
+https://pyinstaller.org/en/stable/license.html for the bootloader exception.
+
+The Windows EXEs exclude PyCdlib from their frozen archives and dynamically
+import its unmodified source from `dependencies/pycdlib`. This source is included
+in every portable Windows ZIP and can be replaced independently of the EXEs.
+The complete CuePull source and build instructions are included in `source`.
+Windows drag/drop uses the operating system's User32/Shell32 APIs and adds no
+external runtime package. Public screenshots use only generated synthetic data.
